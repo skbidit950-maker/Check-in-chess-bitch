@@ -1,0 +1,13 @@
+{
+  "name": "mate-brilliant-chess",
+  "version": "1.0.0",
+  "description": "Mate & Brilliant — Chess analysis studio",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server -p 3000 -o false",
+    "start": "npx http-server -p 3000 -o false"
+  },
+  "keywords": ["chess", "analysis", "stockfish"],
+  "author": "",
+  "license": "ISC"
+}
