@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mate & Brilliant — Chess Analysis</title>
+<style>
+:root{--bg:#0b1018;--panel:#131c29;--panel2:#192536;--line:#28384d;--text:#eef4fc;--muted:#91a2b8;--accent:#62d6a5;--gold:#f2c66d;--red:#ff727e;--light:#e8edf2;--dark:#7892a5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 12% 0%,#1d3a50 0,transparent 38%),radial-gradient(ellipse at 100% 28%,#183b35 0,transparent 30%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}body:before{content:'';position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(#ffffff05 1px,transparent 1px),linear-gradient(90deg,#ffffff05 1px,transparent 1px);background-size:36px 36px;mask-image:linear-gradient(to bottom,#000,transparent 80%);z-index:-1}
+header{max-width:1180px;margin:auto;padding:24px 20px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(145deg,#9af4ce,#2b9e82);display:grid;place-items:center;color:#08150f;font-size:27px;font-weight:900;box-shadow:0 8px 28px #3cb78b55,0 0 0 4px #5bd5a51c;animation:logoGlow 3s ease-in-out infinite alternate}@keyframes logoGlow{to{box-shadow:0 8px 35px #3cb78b88,0 0 0 7px #5bd5a512}}
+h1{font-size:21px;margin:0;letter-spacing:-.5px}.sub{color:var(--muted);font-size:12px}
+.wrap{max-width:1180px;margin:auto;padding:10px 20px 40px;display:grid;grid-template-columns:minmax(300px,620px) minmax(280px,1fr);gap:20px}
+.panel{background:linear-gradient(145deg,#192a3bdf,#101925f5);backdrop-filter:blur(16px);border:1px solid #49607877;border-radius:20px;padding:16px;box-shadow:0 18px 55px #0005,0 1px 0 #ffffff0a inset;transition:transform .25s,border-color .25s}.panel:hover{border-color:#5b8b8a99}
+.boardtop,.boardbottom{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:12px;padding:5px 2px 10px}
+.board{width:100%;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);overflow:hidden;border-radius:10px;border:1px solid #405268;touch-action:manipulation;user-select:none}
+.square{position:relative;display:grid;place-items:center;font-size:clamp(25px,5.4vw,52px);cursor:pointer;aspect-ratio:1;line-height:1}
+.square.light{background:#e7e6df;color:#17202b}.square.dark{background:#7892a5;color:#17202b}
+.board{gap:0;transition:gap .2s}.board .square{transition:background .25s,border-radius .2s,transform .2s,filter .2s}
+.board.texture-wood .square.light{background:repeating-linear-gradient(4deg,#d8b889,#d8b889 8px,#cba477 10px,#e5c89d 16px);color:#302012}
+.board.texture-wood .square.dark{background:repeating-linear-gradient(4deg,#65432f,#65432f 8px,#785139 10px,#533522 16px);color:#fff0d8}
+.board.texture-marble .square.light{background:radial-gradient(ellipse at 25% 30%,#fff 0,#e8edf4 38%,#b8c5d5 100%);color:#1b2738}
+.board.texture-marble .square.dark{background:radial-gradient(ellipse at 70% 65%,#61718d 0,#35445f 48%,#1d2940 100%);color:#f1f4ff}
+.board.texture-stone .square.light{background:repeating-linear-gradient(135deg,#c5c1b8 0 3px,#d9d4c8 3px 8px);color:#252321}
+.board.texture-stone .square.dark{background:repeating-linear-gradient(45deg,#56545b 0 3px,#45434b 3px 8px);color:#fff}
+.board.texture-neon .square.light{background:linear-gradient(135deg,#193e4a,#245a62);color:#d8ffff;box-shadow:inset 0 0 15px #58e9f455}
+.board.texture-neon .square.dark{background:linear-gradient(135deg,#101d39,#271e50);color:#fff;box-shadow:inset 0 0 15px #ad66ff55}
+.board.shape-rounded{gap:3px;padding:3px;background:#0b111b}.board.shape-rounded .square{border-radius:8px}
+.board.shape-circle{gap:5px;padding:5px;background:#0b111b}.board.shape-circle .square{border-radius:50%;margin:1px;overflow:hidden}
+body[data-theme="halloween"]{--bg:#100b18;--panel:#20142b;--panel2:#2a1938;--line:#57345f;--text:#fff0df;--muted:#c0a7c9;--accent:#ff8b2c;--gold:#ffc45e;background:radial-gradient(ellipse at 12% 0%,#54205f 0,transparent 40%),radial-gradient(ellipse at 100% 28%,#592d14 0,transparent 34%),#100b18}
+body[data-theme="halloween"] .panel{background:linear-gradient(145deg,#2b1939ed,#160f22f5);border-color:#8d4a6377}
+body[data-theme="halloween"] .logo{background:linear-gradient(145deg,#ffbf58,#ed6b21);color:#281009;box-shadow:0 0 30px #ff8b2c66}
+body[data-theme="halloween"] .boardwrap{background:linear-gradient(135deg,#ff9d38,#8b3e9d 48%,#27152f);box-shadow:0 12px 38px #0008,0 0 34px #ff812b33}
+body[data-theme="halloween"] .board.texture-classic .square.light{background:#f1d6ae;color:#2b1630}
+body[data-theme="halloween"] .board.texture-classic .square.dark{background:#59335f;color:#fff0df}
+body[data-theme="halloween"] .pill{background:#4b2b50;color:#ffc27b}
+body[data-theme="halloween"] button.primary{background:linear-gradient(100deg,#ff9b38,#ff6a28);border-color:#ffad56;color:#26120b}
+body[data-theme="emerald"]{--accent:#54e6ae;--bg:#071713;--line:#205844;background:radial-gradient(ellipse at 15% 0%,#145c43 0,transparent 42%),#071713}
+body[data-theme="ice"]{--accent:#83dcff;--bg:#081522;--line:#31536b;background:radial-gradient(ellipse at 15% 0%,#1d587a 0,transparent 42%),#081522}
+body[data-theme="royal"]{--accent:#c59aff;--bg:#120d20;--line:#49336d;background:radial-gradient(ellipse at 15% 0%,#49256e 0,transparent 42%),#120d20}
+.stylebox{border:1px solid var(--line);border-radius:14px;padding:12px}
+
+
+/* Custom piece materials and capture impact effects */
+.piece{display:inline-grid;place-items:center;width:100%;height:100%;font-size:inherit;line-height:1;position:relative;z-index:1;transition:filter .18s,transform .18s;text-shadow:0 2px 3px #0005}
+.piece-white{color:var(--piece-white,#fffdf4);-webkit-text-stroke:.7px var(--piece-white-edge,#292929)}
+.piece-black{color:var(--piece-black,#171717);-webkit-text-stroke:.7px var(--piece-black-edge,#eee8dc)}
+.pieces-wood .piece{filter:sepia(.55) saturate(1.25) drop-shadow(0 2px 1px #251407)}
+.pieces-marble .piece{filter:grayscale(.25) brightness(1.16) drop-shadow(0 2px 2px #0008)}
+.pieces-gold .piece{color:#f5cf69!important;-webkit-text-stroke:.8px #704514;text-shadow:0 0 7px #ffcf5a99,0 2px 3px #0009}
+.pieces-silver .piece{color:#dce8f2!important;-webkit-text-stroke:.8px #536477;text-shadow:0 0 7px #c8e6ff88,0 2px 3px #0009}
+.pieces-neon .piece{color:#8fffe0!important;-webkit-text-stroke:.8px #064e48;text-shadow:0 0 5px #5affd5,0 0 16px #26e9c2}
+.pieces-crystal .piece{color:#d9e9ff!important;-webkit-text-stroke:.8px #6c8fbd;text-shadow:0 0 7px #b8dcff,0 0 17px #77baff}
+.hit-pop{animation:hitPop .48s ease-out}
+.hit-ring{position:absolute;inset:8%;border:4px solid var(--hit-color,#ffcf4a);border-radius:50%;pointer-events:none;animation:hitRing .55s ease-out forwards;z-index:2}
+@keyframes hitPop{0%{transform:scale(.65);filter:brightness(2.2)}45%{transform:scale(1.24)}100%{transform:scale(1)}}
+@keyframes hitRing{0%{transform:scale(.25);opacity:1;border-width:7px}100%{transform:scale(1.35);opacity:0;border-width:1px}}
+.hit-flash{animation:hitFlash .38s ease-out}
+@keyframes hitFlash{0%{box-shadow:inset 0 0 0 7px var(--hit-color,#ffcf4a),0 0 24px var(--hit-color,#ffcf4a)}100%{box-shadow:inset 0 0 0 0 transparent,0 0 0 transparent}}
+
+.square.selected{box-shadow:inset 0 0 0 4px #f3d36d}.square.legal:after{content:"";position:absolute;width:23%;height:23%;border-radius:50%;background:#17202b55}
+.square.capture:after{content:"";position:absolute;inset:5%;border:4px solid #17202b66;border-radius:50%}
+.square.last{background-image:linear-gradient(#f4d36c66,#f4d36c66)}.square.incheck{background:radial-gradient(circle at center,#ff5b68 0%,#b51f3c 55%,#71152d 100%)!important;box-shadow:inset 0 0 0 4px #ff9aa4,0 0 22px #ff314f99;animation:checkPulse 1.1s ease-in-out infinite alternate;z-index:2}.square.incheck:before{content:'CHECK';position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:clamp(7px,1.4vw,11px);font-weight:1000;letter-spacing:1px;color:#fff;text-shadow:0 1px 5px #650016;z-index:4}.square.incheck{color:#fff!important}@keyframes checkPulse{from{filter:brightness(.88)}to{filter:brightness(1.3)}}
+.square .coord{position:absolute;font-size:10px;font-weight:700;opacity:.75;left:4px;bottom:2px}
+.arrowlayer{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.boardwrap{position:relative;padding:7px;border-radius:15px;background:linear-gradient(135deg,#70e2b7,#3d7894 45%,#a18bdb);box-shadow:0 12px 35px #0006,0 0 32px #42c69a22}.board{border:2px solid #d2e8e355;border-radius:9px}.boardtop{font-weight:750;color:#d8e7f5}.checkbanner{display:none;align-items:center;gap:10px;margin:0 0 12px;padding:12px 14px;border-radius:13px;background:linear-gradient(100deg,#7e172c,#ed4057 55%,#7e172c);border:1px solid #ff9aa477;color:white;box-shadow:0 8px 28px #ed405733;animation:bannerIn .28s ease-out}.checkbanner.show{display:flex}.checkbanner .bang{font-size:22px;font-weight:1000}.checkbanner strong{display:block;font-size:14px;letter-spacing:1.5px}.checkbanner small{display:block;color:#ffe0e5;font-size:11px}@keyframes bannerIn{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+button,.btn{border:1px solid var(--line);background:#1a293a;color:var(--text);border-radius:10px;padding:9px 12px;font-weight:650;cursor:pointer}
+button{transition:transform .16s,border-color .16s,background .16s,box-shadow .16s}button:hover{border-color:#5b8c86;background:#21384a;transform:translateY(-1px)}button:active{transform:scale(.98)}button.primary{background:var(--accent);color:#07170f;border-color:var(--accent)}button:disabled{opacity:.45;cursor:wait}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.space{justify-content:space-between}
+h2{font-size:15px;margin:0 0 12px}.muted{color:var(--muted)}.tiny{font-size:11px;color:var(--muted)}
+.metric{background:#0d1622;border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0}
+.eval{font-size:26px;font-weight:800;letter-spacing:-1px}.best{font-size:20px;font-weight:800;color:var(--accent)}
+.pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;background:#203b35;color:#8ee7bf;font-size:11px;font-weight:800}
+.tabs{display:flex;gap:6px;margin-bottom:12px}.tabs button{flex:1;font-size:12px;padding:8px 4px}.tabs button.active{background:#28483f;border-color:#3c8b70;color:#9af0c6}
+input,textarea,select{width:100%;background:#0d1622;border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px;font:inherit}
+textarea{min-height:74px;resize:vertical}.field{margin:10px 0}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.move-list{max-height:150px;overflow:auto;font-family:ui-monospace,monospace;font-size:12px;color:#c2d1df;white-space:pre-wrap}
+.toggle{display:flex;align-items:center;gap:8px;color:#c6d4e3;font-size:13px}.toggle input{width:auto;accent-color:var(--accent)}
+.notice{background:#332b1c;border:1px solid #66532e;color:#e8d4a5;padding:10px 12px;border-radius:10px;font-size:12px;margin-top:12px}.sidepick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px}.sidepick button{padding:12px;border-radius:12px;background:#101a27;border:1px solid #33465c;transition:.2s}.sidepick button.active{border-color:var(--accent);background:linear-gradient(135deg,#1d4b40,#1a2b3b);box-shadow:0 0 0 1px #62d6a555,0 8px 24px #28c18a20}.sidepick button strong{display:block;font-size:15px}.sidepick button span{font-size:11px;color:var(--muted)}.focusline{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:8px}.focusdot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.status{font-size:12px;color:var(--muted);min-height:18px;margin-top:8px}
+@media(max-width:800px){.wrap{grid-template-columns:1fr;padding:8px 12px 28px}header{padding:17px 14px}.panel{padding:12px}.square{font-size:clamp(26px,9vw,48px)}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="logo">♞</div><div><h1>Mate & Brilliant</h1><div class="sub">Chess analysis studio · mobile & desktop</div></div></div><span class="pill">STOCKFISH ANALYSIS</span></header>
+<main class="wrap">
+<section class="panel">
+ <div class="boardtop"><span id="turnLabel">White to move</span><span id="gameState">Starting position</span></div>
+ <div id="checkBanner" class="checkbanner" role="status" aria-live="polite"><span class="bang">!</span><div><strong id="checkTitle">CHECK!</strong><small id="checkDetail">The king is under attack.</small></div></div>
+ <div class="boardwrap"><div id="board" class="board texture-classic shape-square" aria-label="Interactive chessboard"></div><svg id="arrows" class="arrowlayer" viewBox="0 0 800 800" preserveAspectRatio="none"></svg></div>
+ <div class="boardbottom"><span>Tap a piece, then tap its destination · drag also supported</span><span id="orientation">White view</span></div>
+ <div class="controls">
+  <button id="undo">↶ Undo</button><button id="redo">↷ Redo</button><button id="reset">Reset</button><button id="flip">Flip board</button><button id="analyze" class="primary">Analyze position</button>
+ </div>
+ <div class="status" id="status">Loading chess rules…</div>
+ <div class="notice">Analysis is advisory, not 100% guaranteed. Choose White or Black to see the best move for that color; the engine treats your chosen side as the side to move next. This board analyzes positions you enter and does not connect to or automate moves on online chess sites.</div>
+</section>
+<aside class="panel">
+ <div class="tabs"><button class="active" data-tab="analysis">Analysis</button><button data-tab="moves">Moves</button><button data-tab="position">Position</button><button data-tab="style">Style ✦</button></div>
+ <section id="tab-analysis">
+  <h2>Choose your side</h2>
+  <div class="sidepick"><button id="chooseWhite" class="active" type="button"><strong>♔ White</strong><span>Show best move for White</span></button><button id="chooseBlack" type="button"><strong>♚ Black</strong><span>Show best move for Black</span></button></div>
+  <div class="focusline"><i class="focusdot"></i><span id="focusLabel">Currently analyzing White</span></div>
+  <h2>Engine recommendation</h2>
+  <div class="metric"><div class="row space"><span class="muted">Evaluation</span><span class="tiny" id="depth">Depth —</span></div><div class="eval" id="eval">—</div><div class="tiny" id="evalNote">Analyze a position to get a recommendation.</div></div>
+  <div class="metric"><div class="muted tiny">BEST MOVE</div><div class="best" id="bestMove">—</div><div class="tiny" id="bestLine">Best move arrow appears on the board.</div></div>
+  <div class="row" style="margin:10px 0"><label class="toggle"><input id="mateMode" type="checkbox"> Find checkmate</label><label class="toggle"><input id="brilliantMode" type="checkbox"> Find brilliant moves</label></div>
+  <div class="field"><label for="depthSelect">Analysis depth</label><select id="depthSelect"><option value="10">10 · Fast</option><option value="13" selected>13 · Balanced</option><option value="15">15 · Stronger</option><option value="17">17 · Slow</option></select></div>
+  <div class="metric"><div class="muted tiny">CANDIDATE / TACTICAL NOTES</div><div id="notes" class="tiny" style="margin-top:7px">No analysis yet.</div></div>
+  <div class="tiny">Engine service: Stockfish Online API. Requires an internet connection. Do not submit private game data.</div>
+ </section>
+ <section id="tab-moves" hidden><h2>Move history</h2><div class="move-list" id="moveList">No moves yet.</div><div class="controls"><button id="copyPgn">Copy PGN</button></div></section>
+ <section id="tab-position" hidden><h2>Position tools</h2>
+  <div class="field"><label for="fen">FEN position</label><textarea id="fen" spellcheck="false"></textarea></div>
+  <div class="controls"><button id="loadFen">Load FEN</button><button id="copyFen">Copy FEN</button></div>
+  <div class="field"><label for="pgn">PGN game</label><textarea id="pgn" placeholder="Paste PGN here…" spellcheck="false"></textarea></div>
+  <div class="controls"><button id="loadPgn">Load PGN</button></div>
+ </section>
+ <section id="tab-style" hidden>
+  <h2>Board appearance studio</h2>
+  <p class="tiny">Customize the board look. Changes apply instantly and stay saved on this device.</p>
+  <div class="field"><label for="themeSelect">Atmosphere</label><select id="themeSelect"><option value="midnight">Midnight glass</option><option value="halloween">Halloween 🎃</option><option value="emerald">Emerald glow</option><option value="ice">Arctic ice</option><option value="royal">Royal purple</option></select></div>
+  <div class="field"><label for="textureSelect">Square texture</label><select id="textureSelect"><option value="classic">Classic matte</option><option value="wood">Dark wood</option><option value="marble">Marble</option><option value="stone">Ancient stone</option><option value="neon">Neon grid</option></select></div>
+  <div class="field"><label for="shapeSelect">Square shape</label><select id="shapeSelect"><option value="square">Sharp square</option><option value="rounded">Rounded corners</option><option value="circle">Round tiles</option></select></div>
+  <div class="stylebox" style="margin-top:12px">
+   <h2>Chess piece texture</h2>
+   <div class="field"><label for="pieceTexture">Piece material</label><select id="pieceTexture"><option value="classic">Classic</option><option value="wood">Carved wood</option><option value="marble">Marble</option><option value="gold">Gold</option><option value="silver">Silver</option><option value="neon">Neon glow</option><option value="crystal">Crystal</option></select></div>
+   <div class="field"><label for="whitePieceColor">White piece color</label><input id="whitePieceColor" type="color" value="#fffdf4"></div>
+   <div class="field"><label for="blackPieceColor">Black piece color</label><input id="blackPieceColor" type="color" value="#171717"></div>
+  </div>
+  <div class="stylebox" style="margin-top:12px">
+   <h2>Capture / hit effect</h2>
+   <div class="field"><label for="hitEffect">Effect style</label><select id="hitEffect"><option value="ring">Impact ring</option><option value="flash">Color flash</option><option value="pop">Piece pop</option><option value="none">No effect</option></select></div>
+   <div class="field"><label for="hitColor">Effect color</label><input id="hitColor" type="color" value="#ffcf4a"></div>
+  </div>
+  <div class="metric"><div class="row space"><strong>Live preview</strong><span class="pill" id="styleLabel">MIDNIGHT GLASS</span></div><div class="tiny" id="styleDescription" style="margin-top:7px">A cool dark board with a clean matte finish.</div></div>
+  <div class="controls"><button id="resetStyle">Reset appearance</button></div>
+ </section>
+</aside>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<script>
+(()=> {
+ const $=id=>document.getElementById(id), files='abcdefgh', pieces={w:{k:'♔',q:'♕',r:'♖',b:'♗',n:'♘',p:'♙'},b:{k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'}};
+ if(!window.Chess){$('status').textContent='Could not load chess rules library. Check your internet connection and reload.';return;}
+ let game=new Chess(), flipped=false, selected=null, legal=[], redoStack=[], lastMove=null, best=null, busy=false, analysisSide="w";
+ const startFen=game.fen();
+ function squareName(r,c){return files[c]+(8-r)}
+ function render(){
+  const board=$('board');board.innerHTML='';const rows=flipped?[7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7],cols=flipped?[7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7];
+  rows.forEach((r,ri)=>cols.forEach((c,ci)=>{const sq=squareName(r,c),p=game.get(sq),el=document.createElement('div');el.className='square '+((r+c)%2?'dark':'light');el.dataset.sq=sq;
+   if(selected===sq)el.classList.add('selected');if(legal.some(m=>m.to===sq))el.classList.add(p?'capture':'legal');if(lastMove&&(lastMove.from===sq||lastMove.to===sq))el.classList.add('last');
+   if(p){const pieceEl=document.createElement('span');pieceEl.className='piece '+(p.color==='w'?'piece-white':'piece-black');pieceEl.textContent=pieces[p.color][p.type];pieceEl.dataset.piece=p.color+p.type;el.appendChild(pieceEl);el.draggable=true;el.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',sq);select(sq);});}
+   if((!flipped&&ri===7)|| (flipped&&ri===7)){const co=document.createElement('span');co.className='coord';co.textContent=files[c];el.appendChild(co)}
+   el.addEventListener('dragover',e=>e.preventDefault());el.addEventListener('drop',e=>{e.preventDefault();const from=e.dataTransfer.getData('text/plain');if(from)move(from,sq)});
+   el.addEventListener('click',()=>clickSquare(sq));board.appendChild(el);
+  }));
+  const checked=game.in_check(),mate=game.in_checkmate(),checkedColor=game.turn();
+  if(checked){
+   const king=game.board().flatMap((row,ri)=>row.map((piece,ci)=>piece&&piece.type==='k'&&piece.color===checkedColor?squareName(ri,ci):null)).find(Boolean);
+   if(king){const kingEl=board.querySelector('[data-sq="'+king+'"]');if(kingEl)kingEl.classList.add('incheck');}
+  }
+  $('checkBanner').classList.toggle('show',checked);
+  $('checkTitle').textContent=mate?'CHECKMATE!':'CHECK!';
+  $('checkDetail').textContent=mate?'King trapped — the game is over.':(checkedColor==='w'?'White':'Black')+' king is under attack. Make a legal move to escape.';
+  $('turnLabel').textContent=(game.turn()==='w'?'White':'Black')+' to move';$('gameState').textContent=mate?'Checkmate':checked?'⚠ Check':game.in_stalemate()?'Stalemate':'Position ready';
+  $('moveList').textContent=game.history().length?game.history({verbose:true}).reduce((s,m,i)=>s+(i%2===0?Math.floor(i/2+1)+'. ':'')+m.san+' ', ''):'No moves yet.';
+  $('fen').value=game.fen();drawArrow();
+ }
+ function select(sq){const p=game.get(sq);if(!p||p.color!==game.turn()){selected=null;legal=[];render();return;}selected=sq;legal=game.moves({square:sq,verbose:true});render();}
+ function clickSquare(sq){if(selected){if(move(selected,sq))return;}const p=game.get(sq);if(p&&p.color===game.turn())select(sq);else{selected=null;legal=[];render();}}
+ function playHit(square){
+  const effect=$('hitEffect')?.value||'ring';if(effect==='none')return;
+  const target=$('board').querySelector('[data-sq="'+square+'"]');if(!target)return;
+  target.style.setProperty('--hit-color',$('hitColor')?.value||'#ffcf4a');
+  if(effect==='ring'){const ring=document.createElement('span');ring.className='hit-ring';target.appendChild(ring);setTimeout(()=>ring.remove(),600);}
+  if(effect==='flash'){target.classList.add('hit-flash');setTimeout(()=>target.classList.remove('hit-flash'),450);}
+  if(effect==='pop'){const piece=target.querySelector('.piece');if(piece){piece.classList.add('hit-pop');setTimeout(()=>piece.classList.remove('hit-pop'),550);}}
+ }
+ function move(from,to){let result;try{result=game.move({from,to,promotion:'q'});}catch(e){result=null;}if(result){const captured=!!result.captured||String(result.flags||'').includes('e');lastMove={from,to};selected=null;legal=[];redoStack=[];best=null;$('bestMove').textContent='—';$('eval').textContent='—';$('notes').textContent='Position changed. Analyze again.';render();if(captured)playHit(to);return true;}return false;}
+ function drawArrow(){const svg=$('arrows');svg.innerHTML='';if(!best||!best.from||!best.to)return;const order=flipped?7:0;function xy(s){let f=files.indexOf(s[0]),rank=8-Number(s[1]);if(flipped){f=7-f;rank=7-rank;}return{x:(f+.5)*100,y:(rank+.5)*100};}const a=xy(best.from),b=xy(best.to);const ns='http://www.w3.org/2000/svg';const defs=document.createElementNS(ns,'defs'),marker=document.createElementNS(ns,'marker');marker.setAttribute('id','head');marker.setAttribute('markerWidth','7');marker.setAttribute('markerHeight','7');marker.setAttribute('refX','5');marker.setAttribute('refY','3');marker.setAttribute('orient','auto');const path=document.createElementNS(ns,'path');path.setAttribute('d','M0,0 L6,3 L0,6 Z');path.setAttribute('fill','#26b987');marker.appendChild(path);defs.appendChild(marker);svg.appendChild(defs);const line=document.createElementNS(ns,'line');line.setAttribute('x1',a.x);line.setAttribute('y1',a.y);line.setAttribute('x2',b.x);line.setAttribute('y2',b.y);line.setAttribute('stroke','#19a879');line.setAttribute('stroke-width','9');line.setAttribute('stroke-linecap','round');line.setAttribute('marker-end','url(#head)');line.setAttribute('opacity','.92');svg.appendChild(line);}
+ function uciMove(uci){if(!uci||uci.length<4)return null;return{from:uci.slice(0,2),to:uci.slice(2,4)}}
+ async function analyze(){
+  if(busy)return;busy=true;$('analyze').disabled=true;$('status').textContent='Analyzing position…';$('notes').textContent='Contacting Stockfish engine…';
+  const depth=Number($('depthSelect').value),parts=game.fen().split(' ');parts[1]=analysisSide;parts[3]='-';const fen=parts.join(' ');
+  try{
+   const url='https://stockfish.online/api/s/v2.php?fen='+encodeURIComponent(fen)+'&depth='+depth;
+   const response=await fetch(url);if(!response.ok)throw new Error('Engine service returned HTTP '+response.status);
+   const data=await response.json();if(!data.success)throw new Error(data.error||'Engine analysis failed');
+   const uci=String(data.bestmove||'').match(/([a-h][1-8][a-h][1-8][qrbn]?)/i)?.[1];const mv=uciMove(uci);
+   if(!mv)throw new Error('Engine did not return a valid move.');
+   best=mv;drawArrow();$('bestMove').textContent=(analysisSide==='w'?'White: ':'Black: ')+mv.from.toUpperCase()+' → '+mv.to.toUpperCase();
+   const ev=Number(data.evaluation);const mate=data.mate;
+   $('eval').textContent=mate!==null&&mate!==undefined?'Mate in '+mate:(Number.isFinite(ev)?(ev>0?'+':'')+ev.toFixed(2):'—');
+   $('depth').textContent='Depth '+(data.depth||depth);
+   $('evalNote').textContent='Evaluation is from White’s perspective. Best move is calculated for '+(analysisSide==='w'?'White':'Black')+' as if that side moves next.';
+   $('bestLine').textContent=data.continuation?'Line: '+data.continuation:'Best move shown by the arrow.';
+   const isMate=mate!==null&&mate!==undefined;
+   let notes=isMate?'Forced mate detected by the engine.':'Best engine move found at the selected depth.';
+   if($('mateMode').checked&&!isMate)notes+=' No forced mate was reported in this search.';
+   if($('brilliantMode').checked)notes+=' Brilliant-move labels are subjective; this single-move endpoint cannot reliably certify a brilliant move. Review sacrifices and follow-up lines manually.';
+   $('notes').textContent=notes;$('status').textContent='Analysis complete. Best move shown for '+(analysisSide==='w'?'White':'Black')+'.';
+  }catch(err){$('status').textContent='Analysis unavailable: '+err.message;$('notes').textContent='Check your connection or try again later.';}
+  finally{busy=false;$('analyze').disabled=false;}
+ }
+ function chooseSide(side){
+  analysisSide=side;
+  $('chooseWhite').classList.toggle('active',side==='w');
+  $('chooseBlack').classList.toggle('active',side==='b');
+  $('focusLabel').textContent='Currently analyzing '+(side==='w'?'White':'Black');
+  flipped=side==='b';
+  $('orientation').textContent=flipped?'Black view':'White view';
+  best=null;drawArrow();
+  $('bestMove').textContent='—';$('eval').textContent='—';
+  $('notes').textContent='Side changed. Analyze to get the best move for '+(side==='w'?'White':'Black')+'.';
+  $('status').textContent='Selected '+(side==='w'?'White':'Black')+'. The engine will recommend moves for this color only.';
+  render();
+ }
+ $('chooseWhite').addEventListener('click',()=>chooseSide('w'));
+ $('chooseBlack').addEventListener('click',()=>chooseSide('b'));
+ $('analyze').addEventListener('click',analyze);
+ $('undo').onclick=()=>{const m=game.undo();if(m){redoStack.push(m);lastMove=null;best=null;render();$('status').textContent='Move undone. Analyze again for this position.'}};
+ $('redo').onclick=()=>{const m=redoStack.pop();if(m){game.move(m);lastMove=m;best=null;render();}};
+ $('reset').onclick=()=>{game.reset();redoStack=[];lastMove=null;best=null;selected=null;legal=[];$('eval').textContent='—';$('bestMove').textContent='—';$('notes').textContent='No analysis yet.';$('status').textContent='Starting position restored.';render();};
+ $('flip').onclick=()=>{flipped=!flipped;$('orientation').textContent=flipped?'Black view':'White view';render();};
+ document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));['analysis','moves','position','style'].forEach(t=>$( 'tab-'+t).hidden=t!==b.dataset.tab);});
+ $('loadFen').onclick=()=>{const g=new Chess();if(g.load($('fen').value.trim())){game=g;redoStack=[];lastMove=null;best=null;render();$('status').textContent='FEN loaded.';}else $('status').textContent='Invalid FEN position.';};
+ $('copyFen').onclick=()=>navigator.clipboard?.writeText(game.fen()).then(()=>$('status').textContent='FEN copied.').catch(()=>$('status').textContent='Clipboard unavailable.');
+ $('copyPgn').onclick=()=>navigator.clipboard?.writeText(game.pgn()).then(()=>$('status').textContent='PGN copied.').catch(()=>$('status').textContent='Clipboard unavailable.');
+ $('loadPgn').onclick=()=>{const g=new Chess();if(g.load_pgn($('pgn').value.trim())){game=g;redoStack=[];lastMove=null;best=null;render();$('status').textContent='PGN loaded.';}else $('status').textContent='Could not parse PGN.';};
+ const styleDefaults={theme:'midnight',texture:'classic',shape:'square',pieceTexture:'classic',whitePieceColor:'#fffdf4',blackPieceColor:'#171717',hitEffect:'ring',hitColor:'#ffcf4a'};
+ const styleDescriptions={
+  midnight:'A cool dark board with a clean matte finish.',
+  halloween:'Pumpkin-orange highlights, haunted purple panels and spooky night colors.',
+  emerald:'A deep forest-green atmosphere with glowing accents.',
+  ice:'Frosty blue tones with a crisp icy glow.',
+  royal:'A dramatic purple-and-violet chess arena.',
+  classic:'Smooth matte squares.',
+  wood:'Warm wooden grain on every square.',
+  marble:'Polished marble with soft stone veining.',
+  stone:'Rugged ancient-stone texture.',
+  neon:'Futuristic neon-lit tiles.',
+  square:'Classic sharp-edged squares.',
+  rounded:'Soft rounded tile corners.',
+  circle:'Circular tiles for a completely different board shape.'
+ };
+ function applyStyle(){
+  const theme=$('themeSelect').value,texture=$('textureSelect').value,shape=$('shapeSelect').value;
+  const pieceTexture=$('pieceTexture').value,whitePieceColor=$('whitePieceColor').value,blackPieceColor=$('blackPieceColor').value,hitEffect=$('hitEffect').value,hitColor=$('hitColor').value;
+  document.body.dataset.theme=theme;
+  $('board').className='board texture-'+texture+' shape-'+shape+' pieces-'+pieceTexture;
+  document.documentElement.style.setProperty('--piece-white',whitePieceColor);
+  document.documentElement.style.setProperty('--piece-black',blackPieceColor);
+  document.documentElement.style.setProperty('--hit-color',hitColor);
+  $('styleLabel').textContent=theme.toUpperCase().replace('MIDNIGHT','MIDNIGHT GLASS');
+  $('styleDescription').textContent=styleDescriptions[theme]+' '+styleDescriptions[texture]+' '+styleDescriptions[shape];
+  try{localStorage.setItem('mateBrilliantStyle',JSON.stringify({theme,texture,shape,pieceTexture,whitePieceColor,blackPieceColor,hitEffect,hitColor}));}catch(e){}
+ }
+ function loadStyle(){
+  let saved=null;try{saved=JSON.parse(localStorage.getItem('mateBrilliantStyle')||'null');}catch(e){}
+  const v={...styleDefaults,...(saved||{})};
+  if($('themeSelect').querySelector('option[value="'+v.theme+'"]'))$('themeSelect').value=v.theme;
+  if($('textureSelect').querySelector('option[value="'+v.texture+'"]'))$('textureSelect').value=v.texture;
+  if($('shapeSelect').querySelector('option[value="'+v.shape+'"]'))$('shapeSelect').value=v.shape;
+  ['pieceTexture','whitePieceColor','blackPieceColor','hitEffect','hitColor'].forEach(id=>{if(v[id]!==undefined)$(id).value=v[id];});
+  applyStyle();
+ }
+ ['themeSelect','textureSelect','shapeSelect','pieceTexture','whitePieceColor','blackPieceColor','hitEffect','hitColor'].forEach(id=>$(id).addEventListener('change',applyStyle));
+ $('resetStyle').addEventListener('click',()=>{Object.entries(styleDefaults).forEach(([key,value])=>{const id=({theme:'themeSelect',texture:'textureSelect',shape:'shapeSelect'})[key]||key;$(id).value=value;});applyStyle();});
+ loadStyle();
+ chooseSide('w');render();$('status').textContent='Ready. Choose White or Black, then analyze the position.';
+})();
+</script>
+</body>
+</html>
